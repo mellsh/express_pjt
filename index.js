@@ -11,5 +11,5 @@ app.get('/ping', (req, res)=>{
 });
 
 app.get('/tic', (req, res) =>{
-    res.send('tactoe');
+    res.send('qwerty');
 })
