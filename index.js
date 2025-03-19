@@ -1,5 +1,9 @@
 const express = require('express');
 const app = express();
+
+//json으로 된 post의 바디를 읽기 위해 필요
+app.use(express.json())
+
 const PORT = 3000;
 
 const users =  [
@@ -167,6 +171,14 @@ app.get('/articles', (req,res)=>{
   console.log(req);
   res.send("pong")
 });
+
+app.post('/articles',(req,res)=>{
+  const data = req.body
+
+  console.log(data)
+
+  return res.json("ok")
+})
 
 app.get('/articles/:id', (req, res)=>{
 
