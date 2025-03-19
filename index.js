@@ -173,10 +173,13 @@ app.get('/articles', (req,res)=>{
 });
 
 app.post('/articles',(req,res)=>{
-  let headers = req.headers
   let data = req.body
-  console.log(headers);
-  console.log(data)
+  let lastId = articles[articles.length - 1].id
+  data["id"] = lastId + 1
+
+  const now = new Date().toISOString().slice(0, 19) + 'Z';
+  data.date = now;
+
   articles.push(data)
   return res.json("ok")
 })
