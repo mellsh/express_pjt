@@ -1,10 +1,22 @@
 const express = require('express');
+const cors = require('cors');  // CORS 패키지 추가
 const app = express();
 
-//json으로 된 post의 바디를 읽기 위해 필요
-app.use(express.json())
+// CORS 미들웨어 추가
+app.use(cors());
+
+// JSON 파싱 미들웨어
+app.use(express.json());
 
 const PORT = 3000;
+
+// 기존 코드...
+
+app.listen(PORT, () => {
+  console.log(`서버가 http://localhost:${PORT} 에서 실행 중입니다.`);
+});
+//json으로 된 post의 바디를 읽기 위해 필요
+app.use(express.json())
 
 const users =  [
     {
@@ -139,10 +151,6 @@ const articles = [
       "date": "2025-03-09T20:00:00Z"
     }]
 
-app.listen(PORT, () => {
-  console.log(`서버가 http://localhost:${PORT} 에서 실행 중입니다.`);
-});
-
 app.get('/ping', (req, res)=>{
     res.send('pong');
 });
@@ -183,6 +191,20 @@ app.post('/articles',(req,res)=>{
   articles.push(data)
   return res.json("ok")
 })
+
+app.delete('/articles/:id', (req, res) => {
+  const id = parseInt(req.params.id);
+
+  // articles 배열에서 해당 id의 게시글을 찾고 삭제
+  const index = articles.findIndex(article => article.id === id);
+
+  if (index !== -1) {
+    articles.splice(index, 1);  // 해당 id의 게시글을 삭제
+    res.json("ok");  // 삭제 성공
+  } else {
+    res.status(404).json({ message: '게시글을 찾을 수 없습니다.' });  // 게시글을 못 찾으면 에러 처리
+  }
+});
 
 app.get('/articles/:id', (req, res)=>{
 
