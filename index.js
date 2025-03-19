@@ -169,14 +169,15 @@ app.get('/test', (req,res)=>{
 
 app.get('/articles', (req,res)=>{
   console.log(req);
-  res.send("pong")
+  res.send(articles)
 });
 
 app.post('/articles',(req,res)=>{
-  const data = req.body
-
+  let headers = req.headers
+  let data = req.body
+  console.log(headers);
   console.log(data)
-
+  articles.push(data)
   return res.json("ok")
 })
 
