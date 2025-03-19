@@ -174,10 +174,10 @@ app.get('/articles/:id', (req, res)=>{
 
   for(let i = 0; i < articles.length ; i++){
     if (articles[i].id == id){
-      res.json(articles[i])
+      return res.json(articles[i])
     }
   }
 
-  res.send("Nien!")
-  
+  return res.send("Nien!") 
+
 });
