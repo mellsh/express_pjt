@@ -213,6 +213,18 @@ app.delete('/articles/:id', (req, res) => {
   //}
 });
 
+app.put('/articles/:id', (req, res) => {
+  let id = req.params.id - 1
+  let data = req.body
+
+  console.log(data)
+  console.log(id)
+
+  articles[id] = data
+
+  res.send("ok")
+})
+
 app.get('/articles/:id', (req, res)=>{
 
   let id = req.params.id
@@ -223,6 +235,6 @@ app.get('/articles/:id', (req, res)=>{
     }
   }
 
-  return res.send("Nien!") 
+  return res.send("Nein!") 
 
 });
