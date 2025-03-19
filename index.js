@@ -163,18 +163,21 @@ app.get('/test', (req,res)=>{
 
 });
 
-app.get('/user/:id', (req, res)=>{
-    console.log(req.params.id);
+app.get('/articles', (req,res)=>{
+  console.log(req);
+  res.send("pong")
+});
 
-    let id = req.params.id;
+app.get('/articles/:id', (req, res)=>{
 
-    let user_len = users.length;
+  let id = req.params.id
 
-    for(let i=0; i<user_len; i++){
-        if (users[i].id == id){
-            res.send(users[i])
-        }
+  for(let i = 0; i < articles.length ; i++){
+    if (articles[i].id == id){
+      res.json(articles[i])
     }
+  }
 
-    res.send("not found")
+  res.send("Nien!")
+  
 });
