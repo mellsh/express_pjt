@@ -193,17 +193,24 @@ app.post('/articles',(req,res)=>{
 })
 
 app.delete('/articles/:id', (req, res) => {
-  const id = parseInt(req.params.id);
+  let id = req.params.id
 
-  // articles 배열에서 해당 id의 게시글을 찾고 삭제
-  const index = articles.findIndex(article => article.id === id);
+  console.log(id);
 
-  if (index !== -1) {
-    articles.splice(index, 1);  // 해당 id의 게시글을 삭제
-    res.json("ok");  // 삭제 성공
-  } else {
-    res.status(404).json({ message: '게시글을 찾을 수 없습니다.' });  // 게시글을 못 찾으면 에러 처리
-  }
+  articles.splice(id-1, 1)
+
+  res.send("ok")
+
+
+  //const id = parseInt(req.params.id);
+  //// articles 배열에서 해당 id의 게시글을 찾고 삭제
+  //const index = articles.findIndex(article => article.id === id);
+  //if (index !== -1) {
+  //  articles.splice(index, 1);  // 해당 id의 게시글을 삭제
+  //  res.json("ok");  // 삭제 성공
+  //} else {
+  //  res.status(404).json({ message: '게시글을 찾을 수 없습니다.' });  // 게시글을 못 찾으면 에러 처리
+  //}
 });
 
 app.get('/articles/:id', (req, res)=>{
