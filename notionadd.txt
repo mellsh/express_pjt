@@ -15,3 +15,12 @@ console.log(req.params.id);
     }
 
     res.send("not found")
+
+
+INSERT INTO User (email, password, profile_url, nickname)
+VALUES
+  ('user1@example.com', 'password123', 'https://example.com/profile1', 'user1'),
+  ('user2@example.com', 'password456', 'https://example.com/profile2', 'user2'),
+  ('user3@example.com', 'password789', 'https://example.com/profile3', 'user3'),
+  ('user4@example.com', 'password101', 'https://example.com/profile4', 'user4'),
+  ('user5@example.com', 'password202', 'https://example.com/profile5', 'user5');
