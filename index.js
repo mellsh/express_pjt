@@ -56,17 +56,15 @@ app.get("/articles/:id", (req, res) => {
     db.get(sql, [articleId], (err, row) => {
         if (err) {
             // 오류 발생 시 로그에 출력하고 500 상태 코드로 반환
-            console.error("Database error: ", err.message);
-            return res.status(500).send('Database error');
+            return res.status(500).json({ error: err.message });
         }
 
         if (!row) {
             // 해당 id의 아티클이 없을 경우
-            console.log("No article found for ID:", articleId);  // 해당 ID의 아티클을 찾지 못했을 때 로그
-            return res.status(404).send('Article not found');
+            return res.status(404).json('Article not found');
         }
 
         // 아티클을 찾은 경우
-        res.status(200).json(row);  // 찾은 아티클 반환
+        res.json(row);  // 찾은 아티클 반환
     });
 });
