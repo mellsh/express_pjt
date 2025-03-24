@@ -139,3 +139,18 @@ app.post("/articles/:id/comments", (req, res) => {
     });
 });
 
+app.get("/articles/:id/comments", (req,res)=>{
+    const sql = "SELECT * FROM comments WHERE article_id = ?"; // 최신 글이 위에 오도록 정렬
+    const articleId = req.params.id
+
+    // db.all을 사용하여 여러 행을 가져오기
+    db.all(sql, [articleId], (err, rows) => {
+        if (err) {
+            // 오류 발생 시
+            return res.status(500).json({ error : err.message});
+        }
+
+        // 아티클 리스트를 성공적으로 가져왔을 경우 응답
+        res.json(rows);
+    })
+})
