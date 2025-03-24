@@ -68,3 +68,22 @@ app.get("/articles/:id", (req, res) => {
         res.json(row);  // 찾은 아티클 반환
     });
 });
+
+// 아티클 삭제 API
+app.delete("/articles/:id", (req, res) => {
+    const articleId = req.params.id;
+
+    // SQL DELETE 쿼리 실행
+    db.run("DELETE FROM articles WHERE id = ?", [articleId], function(err) {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+
+        if (this.changes === 0) {
+            return res.status(404).json({ message: 'Article not found' });
+        }
+
+        return res.status(200).json({ message: 'Article deleted successfully' });
+    });
+});
+
