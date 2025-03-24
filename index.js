@@ -111,3 +111,31 @@ app.delete("/articles/:id", (req, res) => {
     });
 });
 
+// 댓글 작성 API
+app.post("/articles/:id/comments", (req, res) => {
+    const articleId = req.params.id;  // URL에서 article_id 추출
+    const { content } = req.body;  // 요청 본문에서 댓글 내용 추출
+
+    // 댓글이 빈 내용일 경우 처리
+    if (!content || content.trim() === "") {
+        return res.status(400).json({ message: "Content is required." });
+    }
+
+    // SQL INSERT 쿼리 실행
+    const sql = "INSERT INTO comments (content, article_id) VALUES (?, ?)";
+
+    db.run(sql, [content, articleId], function (err) {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+
+        // 성공적으로 댓글이 추가된 경우
+        res.status(201).json({
+            id: this.lastID,  // 방금 삽입된 댓글의 ID
+            content,
+            article_id: articleId,
+            created_at: new Date().toISOString()  // 현재 시간
+        });
+    });
+});
+
