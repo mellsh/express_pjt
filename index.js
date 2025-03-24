@@ -69,6 +69,30 @@ app.get("/articles/:id", (req, res) => {
     });
 });
 
+
+
+
+// 아티클 수정 API
+app.put("/articles/:id", (req, res) => {
+    let articleId = req.params.id;  // URL에서 id 파라미터 추출
+    let { title, content } = req.body;  // 요청 본문에서 title과 content 추출
+
+    const sql = "UPDATE articles SET title = ?, content = ? WHERE id = ?";
+
+    db.run(sql, [title, content, articleId], function(err) {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+
+        if (this.changes === 0) {
+            return res.status(404).json({ message: 'Article not found' });
+        }
+
+        return res.status(200).json({ message: 'Article updated successfully' });
+    });
+});
+
+
 // 아티클 삭제 API
 app.delete("/articles/:id", (req, res) => {
     const articleId = req.params.id;
