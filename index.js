@@ -21,19 +21,36 @@ app.listen(PORT, () => {
     console.log(`서버가 http://localhost:${PORT} 에서 실행 중입니다.`);
   });
 
-app.post('/articles', (req, res) => {
+  app.post('/articles', (req, res) => {
     const { title, content } = req.body;
-    //^^^  언팩킹문법으로 post보낼 값들이 많아질 걸 대비해 위와 방식으로 편하게 쓰도록 한다.
 
-    db.run(`INSERT INTO articles (title, content) VALUES (?, ?)`,
-      [title, content],
-      function(err) {
+    // Authorization 헤더에서 JWT 토큰을 추출
+    const token = req.headers.authorization && req.headers.authorization.split(' ')[1];
+
+    if (!token) {
+        return res.status(401).json({ message: "로그인이 필요합니다." });
+    }
+
+    // JWT 토큰을 검증하여 유효한지 확인
+    jwt.verify(token, JWT_SECRET_KEY, (err, decoded) => {
         if (err) {
-          return res.status(500).json({error: err.message});
+            return res.status(403).json({ message: "잘못된 토큰입니다." });
         }
-        res.json({id: this.lastID, title, content});
-      });
-  });
+
+        // 토큰이 유효하면 게시글 작성
+        db.run(`INSERT INTO articles (title, content, created_at) VALUES (?, ?, ?)`,
+            [title, content, new Date().toISOString()],
+            function (err) {
+                if (err) {
+                    return res.status(500).json({ error: err.message });
+                }
+
+                // 게시글 작성이 성공하면 새 게시글 정보 반환
+                res.json({ id: this.lastID, title, content, created_at: new Date().toISOString() });
+            });
+    });
+});
+
 
 app.get('/articles', (req, res) => {
     // SQL 쿼리: articles 테이블에서 모든 데이터를 조회
