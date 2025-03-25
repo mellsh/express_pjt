@@ -3,6 +3,7 @@ const cors = require('cors');  // CORS 패키지 추가
 const { Database } = require('sqlite3');
 const app = express();
 const sqlite3 = require('sqlite3').verbose();
+const bcrypt = require('bcrypt'); // bcrypt 가져오기
 
 const db = new sqlite3.Database('./database.db');  //db 연결
 // CORS 미들웨어 추가
@@ -155,7 +156,7 @@ app.get("/articles/:id/comments", (req,res)=>{
     })
 })
 
-app.post('/users', (req, res) => {
+app.post('/users', async (req, res) => {
     let { email, password } = req.body;
 
     if (!email || !password) {
@@ -163,7 +164,7 @@ app.post('/users', (req, res) => {
     }
 
     // 이메일 중복 확인
-    db.get("SELECT * FROM users WHERE email = ?", [email], (err, row) => {
+    db.get("SELECT * FROM users WHERE email = ?", [email], async (err, row) => {
         if (err) {
             return res.status(500).json({ error: err.message });
         }
@@ -172,44 +173,64 @@ app.post('/users', (req, res) => {
             return res.status(409).json({ message: "Email already exists." }); // 409 Conflict
         }
 
-        // 이메일이 중복되지 않으면 사용자 추가
-        db.run("INSERT INTO users (email, password) VALUES (?, ?)", [email, password], function (err) {
+        try {
+            // 비밀번호 해싱 (10번 솔트)
+            const hashedPassword = await bcrypt.hash(password, 10);
+
+            // 해싱된 비밀번호를 DB에 저장
+            db.run("INSERT INTO users (email, password) VALUES (?, ?)", [email, hashedPassword], function (err) {
+                if (err) {
+                    return res.status(500).json({ error: err.message });
+                }
+
+                res.status(200).json({
+                    message: "회원가입 완료"
+                });
+            });
+
+        } catch (hashError) {
+            return res.status(500).json({ error: "Password hashing failed." });
+        }
+    });
+});
+
+app.post("/login", (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ message: "Email and password are required." });
+    }
+
+    // 이메일로 사용자 조회
+    db.get("SELECT * FROM users WHERE email = ?", [email], (err, user) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+
+        // 이메일이 존재하지 않으면 로그인 실패
+        if (!user) {
+            return res.status(401).json({ message: "이메일 없음!" });
+        }
+
+        // 비밀번호 비교 (입력된 비밀번호 vs 해싱된 비밀번호)
+        bcrypt.compare(password, user.password, (err, isMatch) => {
             if (err) {
                 return res.status(500).json({ error: err.message });
             }
 
-            res.status(201).json({
-                id: this.lastID,
-                email,
-                created_at: new Date().toISOString()
+            // 비밀번호가 일치하지 않으면 로그인 실패
+            if (!isMatch) {
+                return res.status(401).json({ message: "비밀번호 틀림" });
+            }
+
+            // 로그인 성공
+            res.status(200).json({
+                message: "로그인 성공",
+                user: {
+                    id: user.id,
+                    email: user.email
+                }
             });
         });
     });
 });
-
-app.post("/login", (req, res)=>{
-    const {email, password} = req.body
-
-    db.get("SELECT * FROM users WHERE email = ?", [email], (err, user) => {
-        if (err) {
-            return res.status(500).json({ error:err.message })
-        }
-
-        if(!user) {
-            return res.status(401).json({ message:"이메일 없음!" })
-        }
-
-        if(user.password !== password){
-            return res.status(401).json({ message:"비밀번호 틀림" })
-        }
-
-        res.status(200).json({
-            message:"로그인 성공",
-            user: {
-                id: user.id,
-                email: user.email
-            }
-        })
-    })
-})
-
