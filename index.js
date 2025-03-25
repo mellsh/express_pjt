@@ -155,4 +155,61 @@ app.get("/articles/:id/comments", (req,res)=>{
     })
 })
 
+app.post('/users', (req, res) => {
+    let { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ message: "Email and password are required." });
+    }
+
+    // 이메일 중복 확인
+    db.get("SELECT * FROM users WHERE email = ?", [email], (err, row) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+
+        if (row) {
+            return res.status(409).json({ message: "Email already exists." }); // 409 Conflict
+        }
+
+        // 이메일이 중복되지 않으면 사용자 추가
+        db.run("INSERT INTO users (email, password) VALUES (?, ?)", [email, password], function (err) {
+            if (err) {
+                return res.status(500).json({ error: err.message });
+            }
+
+            res.status(201).json({
+                id: this.lastID,
+                email,
+                created_at: new Date().toISOString()
+            });
+        });
+    });
+});
+
+app.post("/login", (req, res)=>{
+    const {email, password} = req.body
+
+    db.get("SELECT * FROM users WHERE email = ?", [email], (err, user) => {
+        if (err) {
+            return res.status(500).json({ error:err.message })
+        }
+
+        if(!user) {
+            return res.status(401).json({ message:"이메일 없음!" })
+        }
+
+        if(user.password !== password){
+            return res.status(401).json({ message:"비밀번호 틀림" })
+        }
+
+        res.status(200).json({
+            message:"로그인 성공",
+            user: {
+                id: user.id,
+                email: user.email
+            }
+        })
+    })
+})
 
