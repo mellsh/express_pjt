@@ -4,6 +4,9 @@ const { Database } = require('sqlite3');
 const app = express();
 const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcrypt'); // bcrypt 가져오기
+const jwt = require('jsonwebtoken'); // jsonwebtoken 모듈 가져오기
+// JWT 비밀 키 (환경 변수로 관리하는 것이 좋음)
+const JWT_SECRET_KEY = 'your_secret_key_here';
 
 const db = new sqlite3.Database('./database.db');  //db 연결
 // CORS 미들웨어 추가
@@ -223,9 +226,17 @@ app.post("/login", (req, res) => {
                 return res.status(401).json({ message: "비밀번호 틀림" });
             }
 
-            // 로그인 성공
+            // JWT 토큰 생성
+            const token = jwt.sign(
+                { id: user.id, email: user.email }, // 토큰에 포함될 데이터 (payload)
+                JWT_SECRET_KEY,                    // 비밀 키
+                { expiresIn: '1h' }                // 토큰 만료 시간 설정 (1시간)
+            );
+
+            // 로그인 성공, 토큰과 사용자 정보 반환
             res.status(200).json({
                 message: "로그인 성공",
+                token, // 발급된 JWT 토큰 반환
                 user: {
                     id: user.id,
                     email: user.email
