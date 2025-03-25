@@ -245,3 +245,16 @@ app.post("/login", (req, res) => {
         });
     });
 });
+
+app.get('/logintest', (req, res)=>{
+    console.log(req.headers.authorization.split(' ')[1])
+    let token = req.headers.authorization.split(' ')[1]
+
+    jwt.verify(token, JWT_SECRET_KEY, (err, decoded)=>{
+        if(err){
+            return res.send("에러")
+        }
+
+        return res.send("로그인 성공")
+    })
+})
