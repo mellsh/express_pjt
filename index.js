@@ -6,8 +6,8 @@ const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcrypt'); // bcrypt 가져오기
 const jwt = require('jsonwebtoken'); // jsonwebtoken 모듈 가져오기
 // JWT 비밀 키 (환경 변수로 관리하는 것이 좋음)
-const SECRET_KEY = process.env.SECRET_KEY;
 const dotenv = require('dotenv').config();
+const SECRET_KEY = process.env.SECRET_KEY;
 
 const db = new sqlite3.Database('./database.db');  //db 연결
 // CORS 미들웨어 추가
