@@ -45,16 +45,17 @@ function authMiddleware(req, res, next){
 
   app.post('/articles', authMiddleware,(req, res) => {
     const { title, content } = req.body;
+    console.log(req.user.id)
         // 토큰이 유효하면 게시글 작성
-        db.run(`INSERT INTO articles (title, content, created_at) VALUES (?, ?, ?)`,
-            [title, content, new Date().toISOString()],
+        db.run(`INSERT INTO articles (title, content) VALUES (?, ?)`,
+            [title, content],
             function (err) {
                 if (err) {
                     return res.status(500).json({ error: err.message });
                 }
 
                 // 게시글 작성이 성공하면 새 게시글 정보 반환
-                res.json({ id: this.lastID, title, content, created_at: new Date().toISOString() });
+                res.json({ id: this.lastID, title, content});
             });
     });
 
