@@ -6,7 +6,8 @@ const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcrypt'); // bcrypt 가져오기
 const jwt = require('jsonwebtoken'); // jsonwebtoken 모듈 가져오기
 // JWT 비밀 키 (환경 변수로 관리하는 것이 좋음)
-const JWT_SECRET_KEY = 'your_secret_key_here';
+const SECRET_KEY = process.env.SECRET_KEY;
+const dotenv = require('dotenv').config();
 
 const db = new sqlite3.Database('./database.db');  //db 연결
 // CORS 미들웨어 추가
@@ -32,7 +33,7 @@ app.listen(PORT, () => {
     }
 
     // JWT 토큰을 검증하여 유효한지 확인
-    jwt.verify(token, JWT_SECRET_KEY, (err, decoded) => {
+    jwt.verify(token, SECRET_KEY, (err, decoded) => {
         if (err) {
             return res.status(403).json({ message: "잘못된 토큰입니다." });
         }
@@ -246,7 +247,7 @@ app.post("/login", (req, res) => {
             // JWT 토큰 생성
             const token = jwt.sign(
                 { id: user.id, email: user.email }, // 토큰에 포함될 데이터 (payload)
-                JWT_SECRET_KEY,                    // 비밀 키
+                SECRET_KEY,                    // 비밀 키
                 { expiresIn: '1h' }                // 토큰 만료 시간 설정 (1시간)
             );
 
@@ -267,7 +268,7 @@ app.get('/logintest', (req, res)=>{
     console.log(req.headers.authorization.split(' ')[1])
     let token = req.headers.authorization.split(' ')[1]
 
-    jwt.verify(token, JWT_SECRET_KEY, (err, decoded)=>{
+    jwt.verify(token, SECRET_KEY, (err, decoded)=>{
         if(err){
             return res.send("에러")
         }
