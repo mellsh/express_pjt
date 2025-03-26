@@ -106,43 +106,76 @@ app.get("/articles/:id", (req, res) => {
 
 
 // 아티클 수정 API
-app.put("/articles/:id", authMiddleware,(req, res) => {
+app.put("/articles/:id", authMiddleware, (req, res) => {
     let articleId = req.params.id;  // URL에서 id 파라미터 추출
     let { title, content } = req.body;  // 요청 본문에서 title과 content 추출
+    const requestUserId = req.user.id;  // 요청한 유저의 ID
 
-    const sql = "UPDATE articles SET title = ?, content = ? WHERE id = ?";
+    // 게시글의 작성자 user_id를 조회
+    const sql = "SELECT user_id FROM articles WHERE id = ?";
 
-    db.run(sql, [title, content, articleId], function(err) {
+    db.get(sql, [articleId], (err, row) => {
         if (err) {
             return res.status(500).json({ error: err.message });
         }
 
-        if (this.changes === 0) {
+        if (!row) {
             return res.status(404).json({ message: 'Article not found' });
         }
 
-        return res.status(200).json({ message: 'Article updated successfully' });
+        // 게시글 작성자와 요청한 사용자가 일치하는지 확인
+        if (row.user_id !== requestUserId) {
+            return res.status(403).json({ message: '권한이 없습니다.' }); // 권한 없음
+        }
+
+        // 수정 쿼리 실행
+        const updateSql = "UPDATE articles SET title = ?, content = ? WHERE id = ?";
+
+        db.run(updateSql, [title, content, articleId], function (err) {
+            if (err) {
+                return res.status(500).json({ error: err.message });
+            }
+
+            return res.status(200).json({ message: 'Article updated successfully' });
+        });
     });
 });
+
 
 
 // 아티클 삭제 API
-app.delete("/articles/:id", authMiddleware,(req, res) => {
+app.delete("/articles/:id", authMiddleware, (req, res) => {
     const articleId = req.params.id;
+    const requestUserId = req.user.id;
 
-    // SQL DELETE 쿼리 실행
-    db.run("DELETE FROM articles WHERE id = ?", [articleId], function(err) {
+    // 게시글의 작성자 user_id를 조회
+    const sql = "SELECT user_id FROM articles WHERE id = ?";
+    
+    db.get(sql, [articleId], (err, row) => {
         if (err) {
             return res.status(500).json({ error: err.message });
         }
 
-        if (this.changes === 0) {
+        if (!row) {
             return res.status(404).json({ message: 'Article not found' });
         }
 
-        return res.status(200).json({ message: 'Article deleted successfully' });
+        // 게시글 작성자와 요청한 사용자가 일치하는지 확인
+        if (row.user_id !== requestUserId) {
+            return res.status(403).json({ message: '권한이 없습니다.' }); // 권한 없음
+        }
+
+        // 삭제 쿼리 실행
+        db.run("DELETE FROM articles WHERE id = ?", [articleId], function(err) {
+            if (err) {
+                return res.status(500).json({ error: err.message });
+            }
+
+            return res.status(200).json({ message: 'Article deleted successfully' });
+        });
     });
 });
+
 
 // 댓글 작성 API
 app.post("/articles/:id/comments", authMiddleware,(req, res) => {
